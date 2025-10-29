@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo Store Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    .card {
+      background: white;
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      margin: 5px;
+      padding: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Promo Store Dashboard</h1>
+
+  <div class="card">
+    <h3>Adicionar novo cupom</h3>
+    <input id="code" placeholder="Código do cupom">
+    <select id="type">
+      <option value="percent">Percentual</option>
+      <option value="fixed">Valor fixo</option>
+    </select>
+    <input id="value" type="number" placeholder="Valor">
+    <button onclick="addCoupon()">Adicionar</button>
+  </div>
+
+  <div class="card">
+    <h3>Cupons existentes</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Usado por</th>
+        </tr>
+      </thead>
+      <tbody id="couponTable"></tbody>
+    </table>
+  </div>
+
+  <script src="dashboard.html">
+    // Função para carregar os cupons
+    async function loadCoupons() {
+      const res = await fetch('/api/coupons');
+      const coupons = await res.json();
+      const table = document.getElementById('couponTable');
+      table.innerHTML = '';
+      coupons.forEach(c => {
+        table.innerHTML += `
+          <tr>
+            <td>${c.code}</td>
+            <td>${c.type}</td>
+            <td>${c.value}</td>
+            <td>${c.used_by || '-'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    // Função para adicionar cupom via painel
+    async function addCoupon() {
+      const code = document.getElementById('code').value;
+      const type = document.getElementById('type').value;
+      const value = parseFloat(document.getElementById('value').value);
+
+      if (!code || !value) {
+        alert('Preencha código e valor!');
+        return;
+      }
+
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, type, value })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert('Erro: ' + data.error);
+      } else {
+        alert(`Cupom ${code.toUpperCase()} adicionado!`);
+      }
+
+      document.getElementById('code').value = '';
+      document.getElementById('value').value = '';
+      loadCoupons();
+    }
+
+    loadCoupons(); // Carregar cupons ao abrir a página
+  </script>
+</body>
+</html>
