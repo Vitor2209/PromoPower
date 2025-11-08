@@ -1,4 +1,3 @@
- **como deixar o bot online 24 horas**, sem precisar deixar o computador ligado.
 
 ---
 
